@@ -10,6 +10,8 @@ using Microsoft.Extensions.Hosting;
 using CommandAPI.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using Newtonsoft.Json.Serialization;
 
 namespace CommandAPI
 {
@@ -24,11 +26,15 @@ namespace CommandAPI
         }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<CommandContext>(opt => opt.UseNpgsql       
-            (Configuration.GetConnectionString("PostgreSqlConnection")));
+            services.AddDbContext<CommandContext>(opt => opt.UseNpgsql (Configuration.GetConnectionString("PostgreSqlConnection")));
 
+            services.AddControllers().AddNewtonsoftJson(s => {
+                s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();});
             //SECTION 1. Add code below            
             services.AddControllers();
+            //Add the line below 
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
             //Add the code below  
             //services.AddScoped<ICommandAPIRepo, MockCommandAPIRepo>(); 
             services.AddScoped<ICommandAPIRepo, SqlCommandAPIRepo>(); 
