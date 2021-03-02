@@ -8,11 +8,33 @@ using Xunit;
 using CommandAPI.Controllers; 
 using Microsoft.AspNetCore.Mvc;
 using CommandAPI.Profiles;
+using CommandAPI.Dtos;
 
 namespace CommandAPI.Tests 
 {  
-    public class CommandsControllerTests  
-    {    
+    public class CommandsControllerTests   : IDisposable 
+    {  
+        Mock<ICommandAPIRepo> mockRepo;  
+        CommandsProfile realProfile;  
+        MapperConfiguration configuration;  
+        IMapper mapper;
+
+        public CommandsControllerTests()  
+        {    
+            mockRepo = new Mock<ICommandAPIRepo>();    
+            realProfile = new CommandsProfile();     
+            configuration = new MapperConfiguration(cfg => cfg. AddProfile(realProfile));    
+            mapper = new Mapper(configuration);  
+        }
+        
+        public void Dispose()
+        {    
+            mockRepo = null;    
+            mapper = null;    
+            configuration = null;    
+            realProfile = null;  
+        }
+        
         [Fact]    
         public void GetCommandItems_Returns200OK_WhenDBIsEmpty()    
         {      
@@ -24,7 +46,12 @@ namespace CommandAPI.Tests
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(realProfile));      
             IMapper mapper = new Mapper(configuration);
  
-            var controller = new CommandsController(mockRepo.Object, mapper);    
+            var controller = new CommandsController(mockRepo.Object, mapper);  
+            //Act 
+            var result = controller.GetAllCommands();
+            //Assert 
+            Assert.IsType<OkObjectResult>(result.Result);
+  
         }
         private List<Command> GetCommands(int num)    
         {      
